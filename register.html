@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - QuoteQuest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    body {
+      background-color: #121212;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .light-theme {
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    
+    /* Add styles for the container */
+    .container {
+      max-width: 400px;
+      width: 100%;
+      margin: 20px;
+      padding: 30px;
+      background-color: #f5f5f5;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .dark-theme .container {
+      background-color: #1a1a1a;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .light-theme .container {
+      background-color: #f5f5f5;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Auth container styles */
+    .auth-container {
+      background-color: #f5f5f5;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dark-theme .auth-container {
+      background-color: #1a1a1a;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .light-theme .auth-container {
+      background-color: #f5f5f5;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Auth logo styles */
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .auth-logo h1 {
+      color: #ffffff;
+      margin-bottom: 10px;
+      font-size: 2.5rem;
+      font-weight: 700;
+    }
+    
+    .auth-logo p {
+      color: #cccccc;
+      margin-bottom: 30px;
+      font-size: 1rem;
+    }
+    
+    .dark-theme .auth-logo h1 {
+      color: #ffffff;
+    }
+    
+    .dark-theme .auth-logo p {
+      color: #cccccc;
+    }
+    
+    .light-theme .auth-logo h1 {
+      color: #ffffff;
+    }
+    
+    .light-theme .auth-logo p {
+      color: #cccccc;
+    }
+    
+    /* Form styles */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    
+    /* Input with icon styles */
+    .input-with-icon {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    
+    .input-with-icon input {
+      flex: 1;
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+      background-color: #fff;
+      color: #333;
+    }
+    
+    .input-with-icon i {
+      position: absolute;
+      right: 15px;
+      color: #666;
+    }
+    
+    .dark-theme .input-with-icon input {
+      background-color: #333;
+      color: #fff;
+      border-color: #444;
+    }
+    
+    .dark-theme .input-with-icon i {
+      color: #aaa;
+    }
+    
+    .light-theme .input-with-icon input {
+      background-color: #fff;
+      color: #333;
+      border-color: #ddd;
+    }
+    
+    .light-theme .input-with-icon i {
+      color: #666;
+    }
+    
+    /* Button styles */
+    .primary-btn {
+      width: 100%;
+      padding: 12px;
+      background-color: #4a4a4a;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .primary-btn:hover {
+      background-color: #5a5a5a;
+    }
+    
+    /* Auth divider styles */
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    
+    .auth-divider::before,
+    .auth-divider::after {
+      content: "";
+      flex: 1;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .auth-divider span {
+      padding: 0 10px;
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .dark-theme .auth-divider::before,
+    .dark-theme .auth-divider::after {
+      border-bottom-color: #444;
+    }
+    
+    .dark-theme .auth-divider span {
+      color: #aaa;
+    }
+    
+    .light-theme .auth-divider::before,
+    .light-theme .auth-divider::after {
+      border-bottom-color: #ddd;
+    }
+    
+    .light-theme .auth-divider span {
+      color: #666;
+    }
+    
+    /* Auth redirect styles */
+    .auth-redirect {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    
+    .auth-redirect a {
+      color: #0095f6;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    
+    .auth-redirect a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Alert styles */
+    .alert {
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    
+    .alert-error {
+      background-color: rgba(255, 0, 0, 0.1);
+      color: #ff6b6b;
+      border: 1px solid rgba(255, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body class="dark-theme">
+  <div class="container">
+    <div class="auth-logo">
+      <h1>QuoteQuest</h1>
+      <p>Join our community of quote enthusiasts</p>
+    </div>
+    <div id="error-alert" class="alert alert-error"></div>
+    <form id="register-form" onsubmit="handleRegister(event)">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <div class="input-with-icon">
+          <input type="email" id="email" placeholder="Enter your email" required>
+          <i class="fas fa-envelope"></i>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-with-icon">
+          <input type="password" id="password" placeholder="Enter your password" required>
+          <i class="fas fa-lock"></i>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="confirm-password">Confirm Password</label>
+        <div class="input-with-icon">
+          <input type="password" id="confirm-password" placeholder="Confirm your password" required>
+          <i class="fas fa-lock"></i>
+        </div>
+      </div>
+      <button type="submit" class="primary-btn">Register</button>
+    </form>
+    <div class="auth-divider">
+      <span>OR</span>
+    </div>
+    <p class="auth-redirect">Already have an account? <a href="login.html">Login</a></p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Initialize Supabase client
+    const supabaseUrl = 'YOUR_SUPABASE_URL';
+    const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // Handle registration
+    async function handleRegister(event) {
+      event.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+      const errorAlert = document.getElementById('error-alert');
+      
+      if (password !== confirmPassword) {
+        errorAlert.textContent = 'Passwords do not match';
+        errorAlert.style.display = 'block';
+        return;
+      }
+      
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password
+        });
+        
+        if (error) throw error;
+        
+        alert('Registration successful! Please check your email for verification.');
+        window.location.href = 'login.html';
+      } catch (error) {
+        errorAlert.textContent = 'Registration failed: ' + error.message;
+        errorAlert.style.display = 'block';
+      }
+    }
+    
+    // Check for saved theme preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      document.body.className = savedTheme;
+    }
+  </script>
+</body>
+</html>

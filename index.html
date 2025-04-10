@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuoteQuest</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="dark-theme">
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="index.html" class="logo">QuoteQuest</a>
+            </div>
+            <div class="nav-center">
+                <a href="index.html" class="nav-link active">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="#" class="nav-link" onclick="showCreateQuoteModal()">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Create</span>
+                </a>
+                <a href="profile.html" class="nav-link">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </a>
+                <a href="#" class="nav-link" onclick="showSettingsModal()">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </div>
+            <div class="nav-right">
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="quotes-container">
+            <div id="quotes-list"></div>
+            <div id="loading" class="loading">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <div class="loading-text">Loading quotes...</div>
+                </div>
+            </div>
+            <button id="load-more" onclick="loadMoreQuotes()" style="display: none;">Load More</button>
+        </div>
+    </main>
+
+    <!-- Create Quote Modal -->
+    <div id="create-quote-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Quote</h2>
+                <button class="close-btn" onclick="hideCreateQuoteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <textarea id="quote-content" placeholder="What's on your mind?"></textarea>
+                <input type="text" id="quote-author" placeholder="Author">
+                <input type="text" id="quote-category" placeholder="Category (optional)">
+                <button onclick="addQuote()" class="primary-btn">Post Quote</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="close-btn" onclick="hideSettingsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h3>Appearance</h3>
+                    <div class="setting-item">
+                        <span>Dark Mode</span>
+                        <label class="switch">
+                            <input type="checkbox" id="dark-mode-toggle" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h3>Account</h3>
+                    <button class="secondary-btn" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Loading animation styles */
+        .loading {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            width: 100%;
+        }
+        
+        .loading-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: #0095f6;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 10px;
+        }
+        
+        .loading-text {
+            font-size: 14px;
+            color: #737373;
+        }
+        
+        /* Dark theme styles */
+        .dark-theme .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #0095f6;
+        }
+        
+        .dark-theme .loading-text {
+            color: #aaa;
+        }
+        
+        /* Light theme styles */
+        .light-theme .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top-color: #0095f6;
+        }
+        
+        .light-theme .loading-text {
+            color: #737373;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Supabase configuration
+        const SUPABASE_URL = 'https://jkjfbgjzshwgrsvpclfz.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpramZiZ2p6c2h3Z3JzdnBjbGZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQyOTEzMTcsImV4cCI6MjA1OTg2NzMxN30.7_ZTfn_zotkrqTQMKzE0-wXAvBz9trJPvrNpzT-fnLw';
+
+        // Create Supabase client
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // State management
+        let quotes = [];
+        let currentPage = 1;
+        const QUOTES_PER_PAGE = 10;
+        let hasMore = true;
+        let loading = false;
+
+        // DOM Elements
+        const quotesList = document.getElementById('quotes-list');
+        const loadingElement = document.getElementById('loading');
+        const loadMoreButton = document.getElementById('load-more');
+
+        // Authentication
+        async function checkAuth() {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                console.log('User authenticated:', user.email);
+            } catch (error) {
+                console.error('Authentication error:', error);
+                alert('Authentication error: ' + error.message);
+                window.location.href = 'login.html';
+            }
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'login.html';
+        }
+
+        // Quote Management
+        async function fetchQuotes(reset = false) {
+            try {
+                loading = true;
+                loadingElement.style.display = 'block';
+                loadMoreButton.style.display = 'none';
+
+                if (reset) {
+                    currentPage = 1;
+                    quotes = [];
+                }
+
+                const from = (currentPage - 1) * QUOTES_PER_PAGE;
+                const to = from + QUOTES_PER_PAGE - 1;
+
+                console.log('Fetching quotes from', from, 'to', to);
+
+                const { data: { user }, error: authError } = await supabase.auth.getUser();
+                if (authError) {
+                    console.error('Auth error:', authError);
+                    throw authError;
+                }
+                
+                if (!user) {
+                    console.error('User not authenticated');
+                    throw new Error('User not authenticated');
+                }
+
+                console.log('User authenticated:', user.id);
+
+                // First check if we can read from the quotes table
+                const { data: testRead, error: testReadError } = await supabase
+                    .from('quotes')
+                    .select('id')
+                    .limit(1);
+                
+                if (testReadError) {
+                    console.error('Test read error:', testReadError);
+                    throw testReadError;
+                }
+                
+                console.log('Test read successful, found quotes:', testRead);
+
+                const { data: quotesData, error: quotesError } = await supabase
+                    .from('quotes')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .range(from, to);
+
+                if (quotesError) {
+                    console.error('Quotes fetch error:', quotesError);
+                    throw quotesError;
+                }
+
+                console.log('Quotes fetched successfully:', quotesData);
+
+                // Fetch likes for each quote
+                const quotesWithLikes = await Promise.all(
+                    quotesData.map(async (quote) => {
+                        const { data: likesData, error: likesError } = await supabase
+                            .from('likes')
+                            .select('user_id')
+                            .eq('quote_id', quote.id);
+
+                        if (likesError) {
+                            console.error('Likes fetch error for quote', quote.id, ':', likesError);
+                            throw likesError;
+                        }
+
+                        const userLiked = likesData.some((like) => like.user_id === user.id);
+
+                        return {
+                            ...quote,
+                            likes: likesData.length,
+                            user_liked: userLiked,
+                        };
+                    })
+                );
+
+                quotes = reset ? quotesWithLikes : [...quotes, ...quotesWithLikes];
+                hasMore = quotesWithLikes.length === QUOTES_PER_PAGE;
+                currentPage++;
+
+                console.log('Rendering quotes:', quotes.length);
+                renderQuotes();
+            } catch (error) {
+                console.error('Error fetching quotes:', error);
+                alert('Failed to fetch quotes: ' + error.message);
+                loadingElement.innerHTML = `<div class="error-message">Error loading quotes: ${error.message}</div>`;
+            } finally {
+                loading = false;
+                // Hide the loading indicator after quotes are loaded
+                loadingElement.style.display = 'none';
+                loadMoreButton.style.display = hasMore ? 'block' : 'none';
+            }
+        }
+
+        function renderQuotes() {
+            quotesList.innerHTML = quotes.map(quote => `
+                <div class="quote-card">
+                    <div class="quote-content">${quote.text}</div>
+                    <div class="quote-author">- ${quote.author}</div>
+                    ${quote.category ? `<div class="quote-category">Category: ${quote.category}</div>` : ''}
+                    <div class="quote-actions">
+                        <button 
+                            class="${quote.user_liked ? 'unlike-button' : 'like-button'}"
+                            onclick="${quote.user_liked ? 'unlikeQuote' : 'likeQuote'}('${quote.id}')"
+                        >
+                            ${quote.user_liked ? 'Unlike' : 'Like'} (${quote.likes})
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function likeQuote(quoteId) {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) throw new Error('User not authenticated');
+
+                const { error: likeError } = await supabase
+                    .from('likes')
+                    .insert([{ quote_id: quoteId, user_id: user.id }]);
+
+                if (likeError) throw likeError;
+
+                const quoteIndex = quotes.findIndex(q => q.id === quoteId);
+                if (quoteIndex !== -1) {
+                    quotes[quoteIndex].likes++;
+                    quotes[quoteIndex].user_liked = true;
+                    renderQuotes();
+                }
+            } catch (error) {
+                console.error('Error liking quote:', error);
+                alert('Failed to like quote. Please try again.');
+            }
+        }
+
+        async function unlikeQuote(quoteId) {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) throw new Error('User not authenticated');
+
+                const { error: unlikeError } = await supabase
+                    .from('likes')
+                    .delete()
+                    .eq('quote_id', quoteId)
+                    .eq('user_id', user.id);
+
+                if (unlikeError) throw unlikeError;
+
+                const quoteIndex = quotes.findIndex(q => q.id === quoteId);
+                if (quoteIndex !== -1) {
+                    quotes[quoteIndex].likes--;
+                    quotes[quoteIndex].user_liked = false;
+                    renderQuotes();
+                }
+            } catch (error) {
+                console.error('Error unliking quote:', error);
+                alert('Failed to unlike quote. Please try again.');
+            }
+        }
+
+        async function addQuote() {
+            try {
+                const text = document.getElementById('quote-content').value.trim();
+                const author = document.getElementById('quote-author').value.trim();
+                const category = document.getElementById('quote-category').value.trim();
+
+                if (!text || !author) {
+                    alert('Please fill in both quote and author fields.');
+                    return;
+                }
+
+                const { data: { user }, error: authError } = await supabase.auth.getUser();
+                if (authError) {
+                    console.error('Auth error:', authError);
+                    throw authError;
+                }
+                
+                if (!user) {
+                    alert('You must be logged in to add quotes.');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                console.log('User authenticated:', user.id);
+                console.log('Adding quote:', { text, author, category, user_id: user.id });
+
+                // First check if we can read from the quotes table
+                const { data: testRead, error: testReadError } = await supabase
+                    .from('quotes')
+                    .select('id')
+                    .limit(1);
+                
+                if (testReadError) {
+                    console.error('Test read error:', testReadError);
+                    throw testReadError;
+                }
+                
+                console.log('Test read successful');
+
+                const { data: newQuote, error: addError } = await supabase
+                    .from('quotes')
+                    .insert([{ 
+                        text, 
+                        author, 
+                        category: category || null,
+                        user_id: user.id
+                    }])
+                    .select()
+                    .single();
+
+                if (addError) {
+                    console.error('Supabase error details:', {
+                        message: addError.message,
+                        details: addError.details,
+                        hint: addError.hint,
+                        code: addError.code
+                    });
+                    throw addError;
+                }
+
+                console.log('Quote added successfully:', newQuote);
+
+                quotes.unshift({ ...newQuote, likes: 0, user_liked: false });
+                renderQuotes();
+
+                // Clear form
+                document.getElementById('quote-content').value = '';
+                document.getElementById('quote-author').value = '';
+                document.getElementById('quote-category').value = '';
+            } catch (error) {
+                console.error('Error adding quote:', error);
+                alert('Failed to add quote: ' + error.message);
+            }
+        }
+
+        function loadMoreQuotes() {
+            if (!loading && hasMore) {
+                fetchQuotes();
+            }
+        }
+
+        // Initialize
+        async function init() {
+            await checkAuth();
+            await fetchQuotes(true);
+        }
+
+        // Initialize the app
+        init();
+
+        // Add these new functions for modal handling
+        function showCreateQuoteModal() {
+            document.getElementById('create-quote-modal').style.display = 'flex';
+        }
+
+        function hideCreateQuoteModal() {
+            document.getElementById('create-quote-modal').style.display = 'none';
+        }
+
+        function showSettingsModal() {
+            document.getElementById('settings-modal').style.display = 'flex';
+        }
+
+        function hideSettingsModal() {
+            document.getElementById('settings-modal').style.display = 'none';
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            document.body.classList.toggle('light-theme');
+            const isDark = document.body.classList.contains('dark-theme');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.body.classList.add(savedTheme + '-theme');
+    </script>
+</body>
+</html>
