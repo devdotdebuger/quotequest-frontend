@@ -283,47 +283,53 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // Initialize Supabase client
-    const supabaseUrl = 'YOUR_SUPABASE_URL';
-    const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-    // Handle registration
-    async function handleRegister(event) {
-      event.preventDefault();
-      
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const confirmPassword = document.getElementById('confirm-password').value;
-      const errorAlert = document.getElementById('error-alert');
-      
-      if (password !== confirmPassword) {
-        errorAlert.textContent = 'Passwords do not match';
-        errorAlert.style.display = 'block';
-        return;
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize Supabase client
+      const SUPABASE_URL = 'https://jkjfbgjzshwgrsvpclfz.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpramZiZ2p6c2h3Z3JzdnBjbGZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQyOTEzMTcsImV4cCI6MjA1OTg2NzMxN30.7_ZTfn_zotkrqTQMKzE0-wXAvBz9trJPvrNpzT-fnLw';
+  
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  
+      // Handle registration
+      window.handleRegister = async function(event) {
+        event.preventDefault();
+  
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+        const errorAlert = document.getElementById('error-alert');
+  
+        errorAlert.style.display = 'none';
+  
+        if (password !== confirmPassword) {
+          errorAlert.textContent = 'Passwords do not match';
+          errorAlert.style.display = 'block';
+          return;
+        }
+  
+        try {
+          const { data, error } = await supabase.auth.signUp({
+            email,
+            password
+          });
+  
+          if (error) throw error;
+  
+          alert('Registration successful! Please check your email for verification.');
+          window.location.href = 'login.html';
+        } catch (error) {
+          errorAlert.textContent = 'Registration failed: ' + error.message;
+          errorAlert.style.display = 'block';
+        }
+      };
+  
+      // Apply saved theme
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        document.body.className = savedTheme;
       }
-      
-      try {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password
-        });
-        
-        if (error) throw error;
-        
-        alert('Registration successful! Please check your email for verification.');
-        window.location.href = 'login.html';
-      } catch (error) {
-        errorAlert.textContent = 'Registration failed: ' + error.message;
-        errorAlert.style.display = 'block';
-      }
-    }
-    
-    // Check for saved theme preference
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      document.body.className = savedTheme;
-    }
+    });
   </script>
+  
 </body>
 </html>
